@@ -5,7 +5,7 @@ import sys
 
 import argparse
 import numpy as np
-
+from cv2 import imshow
 from PIL import Image, ImageFont, ImageDraw
 import json
 import collections
@@ -128,7 +128,8 @@ def filter_recurring_hash(charset, font, canvas_size, x_offset, y_offset):
     hash_count = collections.defaultdict(int)
     for c in sample:
         img = draw_single_char(c, font, canvas_size, x_offset, y_offset)
-        hash_count[hash(img.tobytes())] += 1
+        if type(img) == "PIL.Image.Image":
+            hash_count[hash(img.tobytes())] += 1
     recurring_hashes = filter(lambda d: d[1] > 2, hash_count.items())
     return [rh[0] for rh in recurring_hashes]
 
