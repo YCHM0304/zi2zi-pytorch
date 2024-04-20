@@ -83,6 +83,8 @@ def draw_single_char(ch, font, canvas_size, x_offset=0, y_offset=0):
 
 def draw_font2font_example(ch, src_font, dst_font, canvas_size, x_offset, y_offset, filter_hashes):
     dst_img = draw_single_char(ch, dst_font, canvas_size, x_offset, y_offset)
+    if dst_img is None:
+        return None
     # check the filter example in the hashes or not
     dst_hash = hash(dst_img.tobytes())
     if dst_hash in filter_hashes:
@@ -128,6 +130,8 @@ def filter_recurring_hash(charset, font, canvas_size, x_offset, y_offset):
     hash_count = collections.defaultdict(int)
     for c in sample:
         img = draw_single_char(c, font, canvas_size, x_offset, y_offset)
+        if img is None:
+            continue
         if type(img) == "PIL.Image.Image":
             hash_count[hash(img.tobytes())] += 1
     recurring_hashes = filter(lambda d: d[1] > 2, hash_count.items())
@@ -150,6 +154,9 @@ def font2font(src, dst, charset, char_size, canvas_size,
         if count == sample_count:
             break
         e = draw_font2font_example(c, src_font, dst_font, canvas_size, x_offset, y_offset, filter_hashes)
+        while e is None:
+            new_c = random.choice(charset[sample_count:])
+            e = draw_font2font_example(new_c, src_font, dst_font, canvas_size, x_offset, y_offset, filter_hashes)
         if e:
             e.save(os.path.join(sample_dir, "%d_%04d.jpg" % (label, count)))
             count += 1
