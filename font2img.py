@@ -154,9 +154,8 @@ def font2font(src, dst, charset, char_size, canvas_size,
         if count == sample_count:
             break
         e = draw_font2font_example(c, src_font, dst_font, canvas_size, x_offset, y_offset, filter_hashes)
-        while e is None:
-            new_c = random.choice(charset[sample_count:])
-            e = draw_font2font_example(new_c, src_font, dst_font, canvas_size, x_offset, y_offset, filter_hashes)
+        if e is None:
+            continue
         if e:
             e.save(os.path.join(sample_dir, "%d_%04d.jpg" % (label, count)))
             count += 1
