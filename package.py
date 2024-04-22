@@ -68,7 +68,7 @@ def get_special_type():
 
 if __name__ == "__main__":
     if not os.path.isdir(args.save_dir):
-        os.mkdir(args.save_dir)
+        os.makedirs(args.save_dir)
 
     font_set, font_dict, inv_font_dict = get_special_type()
 
@@ -89,7 +89,7 @@ if __name__ == "__main__":
             else:
                 continue
         ok_fonts = set(label_map.keys())
-    
+
 
     train_path = os.path.join(args.save_dir, "train.obj")
     val_path = os.path.join(args.save_dir, "val.obj")
