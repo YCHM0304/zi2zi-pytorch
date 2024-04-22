@@ -1,11 +1,15 @@
 
 export CUDA_VISIBLE_DEVICES=2
 
+epoch=50
+batch_size=64
+
+
 python train.py \
---experiment_dir ZhongHuaSong2Shufa_experiment \
+--experiment_dir ./experiment \
 --gpu_ids cuda:0 \
---epoch 50 \
---batch_size 64 \
---sample_steps 10000 \
---checkpoint_steps 10000 \
+--epoch $epoch \
+--batch_size $batch_size \
+--sample_steps 200 \
+--checkpoint_steps 500 \
 --input_nc 1 \
