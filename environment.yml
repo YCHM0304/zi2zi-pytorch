@@ -1,12 +1,16 @@
-name: zi2zi
+name: zi2zi-env
 channels:
   - pytorch
   - defaults
 dependencies:
-  - pytorch=1.5.1
-  - torchvision=0.6.1
-  - cudatoolkit=10.2
-  - pillow=7.1.2
   - numpy=1.18.1
   - scipy=1.4.1
   - imageio=2.8.0
+  - matplotlib
+  - pip:
+    - torch==1.8.0
+    - torchvision==0.9.0
+    - pillow==7.1.2
+    - opencv-python
+    - fontTools
+    - tdqm
