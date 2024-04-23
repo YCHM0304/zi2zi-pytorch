@@ -43,6 +43,19 @@ We use the environment below:
 * scipy 1.4.1
 * imageio 2.8.0
 
+### Environment Setup
+First, create a virtual environment by running the below command:
+
+```sh
+conda env create -f environment.yml
+```
+
+Then, activate the environment by running the below command:
+
+```sh
+conda activate zi2zi-env
+```
+
 ### Preprocess
 To avoid IO bottleneck, preprocessing is necessary to pickle your data into binary and persist in memory during training.
 
@@ -115,7 +128,7 @@ python font2img.py --src_font=a.ttf
 
 Watch out the **--label** is different.
 
-If you want validate the network with specific text, run the below command. 
+If you want validate the network with specific text, run the below command.
 
 ```sh
 python font2img.py --src_font=src.ttf
@@ -127,7 +140,7 @@ python font2img.py --src_font=src.ttf
                    --mode=font2font
 ```
 
-**valid.txt** should be a one line file. 
+**valid.txt** should be a one line file.
 
 #### Font2Imgs
 
@@ -165,7 +178,7 @@ python package.py --dir=image_directories
 
 After running this, you will find two objects **train.obj** and **val.obj** under the **--save_dir** for training and validation, respectively.
 
-If you want infer/validate the network with specific text, run the below command. 
+If you want infer/validate the network with specific text, run the below command.
 
 ```sh
 python package.py --dir=image_directories
@@ -187,11 +200,11 @@ Create a **experiment** directory under the root of the project, and a data dire
 To start training run the following command
 
 ```sh
-python train.py --experiment_dir=experiment 
-				--gpu_ids=cuda:0 
-                --batch_size=32 
+python train.py --experiment_dir=experiment
+				--gpu_ids=cuda:0
+                --batch_size=32
                 --epoch=100
-                --sample_steps=200 
+                --sample_steps=200
                 --checkpoint_steps=500
 ```
 **schedule** here means in between how many epochs, the learning rate will decay by half. The train command will create **sample,logs,checkpoint** directory under **experiment_dir** if non-existed, where you can check and manage the progress of your training.
@@ -206,12 +219,12 @@ After training is done, run the below command to infer test data:
 ```sh
 python infer.py --experiment_dir experiment
                 --batch_size 32
-                --gpu_ids cuda:0 
+                --gpu_ids cuda:0
                 --resume {the saved model you select}
                 --obj_pth obj_path
 ```
 
-For example, if you want use the model **100_net_G.pth** and **100_net_D.pth** , which trained with 100 steps, you should use **--resume=100**. 
+For example, if you want use the model **100_net_G.pth** and **100_net_D.pth** , which trained with 100 steps, you should use **--resume=100**.
 
 However, if you want to infer on some your own text and **DON'T want to generate pickle object file**,  use the command below:
 
