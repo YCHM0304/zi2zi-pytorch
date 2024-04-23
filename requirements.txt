@@ -1,0 +1,6 @@
+torch=1.5.1
+torchvision=0.6.1
+pillow=7.1.2
+numpy=1.18.1
+scipy=1.4.1
+imageio=2.8.0
