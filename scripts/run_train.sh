@@ -1,6 +1,3 @@
-
-export CUDA_VISIBLE_DEVICES=2
-
 epoch=50
 batch_size=64
 
