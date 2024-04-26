@@ -1,10 +1,8 @@
-
-
 python infer.py \
---experiment_dir massive_experiment1 \
---embedding_num 205 \
+--experiment_dir ./experiment \
+--embedding_num 40 \
 --start_from 201 \
---gpu_ids cuda:1 \
---resume 240000 \
---obj_path massive_experiment1/data/val.obj \
---batch_size 32
+--gpu_ids cuda:0 \
+--resume 700 \
+--obj_path experiment/data/val.obj \
+--batch_size 64
