@@ -7,6 +7,7 @@ import os
 from torch.optim.lr_scheduler import StepLR
 from utils.init_net import init_net
 import torchvision.utils as vutils
+from utils.html import HTML
 
 
 class Zi2ZiModel:
@@ -243,18 +244,39 @@ class Zi2ZiModel:
                 # net.eval()
         print('load model %d' % epoch)
 
-    def sample(self, batch, basename):
+    def sample(self, batch, saving_dir, step = None):
+        if saving_dir == 'train':
+            mode = 'train'
+        elif saving_dir == 'val':
+            mode = 'val'
+        if step is not None:
+            basename = os.path.join(saving_dir, step)
+        else:
+            basename = saving_dir
         chk_mkdir(basename)
-        cnt = 0
+        cnt = 0 # count the number of images
         with torch.no_grad():
             self.set_input(batch[0], batch[2], batch[1])
             self.forward()
-            tensor_to_plot = torch.cat([self.fake_B, self.real_B], 3)
+            tensor_to_plot = torch.cat([self.fake_B, self.real_B, self.real_A], 3)
             for label, image_tensor in zip(batch[0], tensor_to_plot):
                 label_dir = os.path.join(basename, str(label.item()))
                 chk_mkdir(label_dir)
                 vutils.save_image(image_tensor, os.path.join(label_dir, str(cnt) + '.png'))
                 cnt += 1
+            webpage = HTML(label_dir, "Dataset = %d, Step = %d" % (mode, step))
+            webpage.add_header('step [%d]' % step)
+            ims, txts, links, labels = [], [], [], []
+            cnt = 0
+            for label, image_tensor in zip(batch[0], tensor_to_plot):
+                img_path = os.path.join(str(label.item()), str(cnt) + '.png')
+                ims.append(img_path)
+                txts.append(label)
+                links.append(img_path)
+                labels.append(str(label.item()))
+                cnt += 1
+            webpage.add_images(ims, txts, links, labels)
+            webpage.save()
             # img = vutils.make_grid(tensor_to_plot)
             # vutils.save_image(tensor_to_plot, basename + "_construct.png")
             '''

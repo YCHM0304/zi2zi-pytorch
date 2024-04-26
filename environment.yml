@@ -2,6 +2,7 @@ name: zi2zi-env
 channels:
   - pytorch
   - nvidia
+  - conda-forge
   - defaults
 dependencies:
   - python=3.11
@@ -14,6 +15,7 @@ dependencies:
   - scipy
   - imageio
   - matplotlib
+  - dominate
   - pip:
     - pillow
     - opencv-python

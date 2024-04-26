@@ -57,8 +57,10 @@ def main():
     data_dir = os.path.join(args.experiment_dir, "data")
     checkpoint_dir = os.path.join(args.experiment_dir, "checkpoint")
     chkormakedir(checkpoint_dir)
-    sample_dir = os.path.join(args.experiment_dir, "sample")
-    chkormakedir(sample_dir)
+    train_sample_dir = os.path.join(args.experiment_dir, "sample", "train")
+    chkormakedir(train_sample_dir)
+    val_sample_dir = os.path.join(args.experiment_dir, "sample", "val")
+    chkormakedir(val_sample_dir)
 
     start_time = time.time()
 
@@ -112,14 +114,18 @@ def main():
                 model.save_networks(global_steps)
                 print("Checkpoint: save checkpoint step %d" % global_steps)
             if global_steps % args.sample_steps == 0:
+                # save training results of the current batch and validation results
+                model.sample(batch, train_sample_dir, str(global_steps))
                 for vbid, val_batch in enumerate(val_dataloader):
-                    model.sample(val_batch, os.path.join(sample_dir, str(global_steps)))
+                    model.sample(val_batch, val_sample_dir, str(global_steps))
                 print("Sample: sample step %d" % global_steps)
             global_steps += 1
         if (epoch + 1) % args.schedule == 0:
             model.update_lr()
+    # save latest training results and validation results
+    model.sample(batch, train_sample_dir, str(global_steps))
     for vbid, val_batch in enumerate(val_dataloader):
-        model.sample(val_batch, os.path.join(sample_dir, str(global_steps)))
+        model.sample(val_batch, val_sample_dir, str(global_steps))
         print("Checkpoint: save checkpoint step %d" % global_steps)
     model.save_networks(global_steps)
 
