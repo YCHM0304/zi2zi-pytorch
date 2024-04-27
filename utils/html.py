@@ -22,6 +22,7 @@ class HTML:
         self.title = title
         self.web_dir = web_dir
         self.img_dir = os.path.join(self.web_dir, 'images')
+        self.created_headers = set()
         if not os.path.exists(self.web_dir):
             os.makedirs(self.web_dir)
         if not os.path.exists(self.img_dir):
@@ -42,10 +43,12 @@ class HTML:
         Parameters:
             text (str) -- the header text
         """
-        with self.doc:
-            h3(text)
+        if text not in self.created_headers:
+            with self.doc:
+                h3(text)
+            self.created_headers.add(text)
 
-    def add_images(self, ims, txts, links, labels, width=400):
+    def add_images(self, ims, txts, links, process, width=400):
         """add images to the HTML file
 
         Parameters:
@@ -58,11 +61,11 @@ class HTML:
         self.doc.add(self.t)
         with self.t:
             with tr():
-                for im, txt, link, label in zip(ims, txts, links, labels):
+                for im, txt, link in zip(ims, txts, links):
                     with td(style="word-wrap: break-word;", halign="center", valign="top"):
                         with p():
-                            with a(href=os.path.join(label, link)):
-                                img(style="width:%dpx" % width, src=os.path.join(label, link))
+                            with a(href=os.path.join('images', process, link)):
+                                img(style="width:%dpx" % width, src=os.path.join('images', process, im))
                             br()
                             p(txt)
 

@@ -13,6 +13,7 @@ import torchvision.transforms as transforms
 from torchvision.utils import save_image, make_grid
 import time
 from model.model import chk_mkdir
+from utils.html import HTML
 
 # writer_dict = {
 #         '智永': 0, ' 隸書-趙之謙': 1, '張即之': 2, '張猛龍碑': 3, '柳公權': 4, '標楷體-手寫': 5, '歐陽詢-九成宮': 6,
@@ -69,6 +70,7 @@ def main():
     sample_dir = os.path.join(args.experiment_dir, "sample")
     infer_dir = os.path.join(args.experiment_dir, "infer")
     chk_mkdir(infer_dir)
+    webpage = HTML(infer_dir, 'Infer')
 
     # train_dataset = DatasetFromObj(os.path.join(data_dir, 'train.obj'), augment=True, bold=True, rotate=True, blur=True)
     # val_dataset = DatasetFromObj(os.path.join(data_dir, 'val.obj'))
@@ -89,6 +91,7 @@ def main():
     model.setup()
     model.print_networks(True)
     model.load_networks(args.resume)
+    model.sample_reset()
 
     t1 = time.time()
 
@@ -126,14 +129,16 @@ def main():
             for label_idx in range(29):
                 model.set_input(torch.ones_like(batch[0]) * label_idx, batch[2], batch[1])
                 model.forward()
-                tensor_to_plot = torch.cat([model.fake_B, model.real_B], 3)
+                tensor_to_plot = torch.cat([model.fake_B, model.real_B, model.real_A], 3)
                 # img = vutils.make_grid(tensor_to_plot)
                 save_image(tensor_to_plot, os.path.join(infer_dir, "infer_{}".format(writer_dict_inv[label_idx]) + "_construct.png"))
         else:
             # model.set_input(batch[0], batch[2], batch[1])
             # model.optimize_parameters()
-            model.sample(batch, infer_dir)
+            model.infer(batch, infer_dir, global_steps, webpage)
+            model.sample_reset()
             global_steps += 1
+    webpage.save()
 
     t_finish = time.time()
 

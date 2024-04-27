@@ -69,6 +69,7 @@ class Zi2ZiModel:
         self.l1_loss = nn.L1Loss()
         self.mse = nn.MSELoss()
         self.sigmoid = nn.Sigmoid()
+        self.sample_saved = False
 
         if self.gpu_ids:
             self.category_loss.cuda()
@@ -244,48 +245,105 @@ class Zi2ZiModel:
                 # net.eval()
         print('load model %d' % epoch)
 
-    def sample(self, batch, saving_dir, step = None):
-        if saving_dir == 'train':
-            mode = 'train'
-        elif saving_dir == 'val':
-            mode = 'val'
-        if step is not None:
-            basename = os.path.join(saving_dir, step)
+    def sample_reset(self):
+        self.sample_saved = False
+        self.sample_labels = set()
+
+    def sample_done(self):
+        self.sample_saved = True
+        self.sample_labels = set()
+
+    def sample(self, batch, saving_dir, epoch, webpage):
+        if not self.sample_saved:
+            img_dir = os.path.join(saving_dir, 'images')
+            chk_mkdir(img_dir)
+            with torch.no_grad():
+                self.set_input(batch[0], batch[2], batch[1])
+                self.forward()
+                tensor_to_plot = torch.cat([self.fake_B, self.real_B, self.real_A], 3)
+                if not epoch == 'latest':
+                    epoch = 'epoch_%d' % epoch
+                webpage.add_header(epoch)
+
+                ims, txts, links = [], [], []
+                  # To track which labels have been added to the webpage
+
+                for label, image_tensor in zip(batch[0], tensor_to_plot):
+                    label_item = label.item()
+                    epoch_dir = os.path.join(img_dir, epoch)
+                    chk_mkdir(epoch_dir)
+                    if label_item not in self.sample_labels:
+                        # Add image of each label to the webpage
+                        self.sample_labels.add(label_item)
+
+                        # Save all images
+                        image_path = os.path.join(epoch_dir, 'label_%d' % label + '.png')
+                        vutils.save_image(image_tensor, image_path)
+
+                        img_name = 'label_%d' % label + '.png'
+
+                        # Add image details for HTML
+                        ims.append(img_name)
+                        txts.append(str(label_item))  # Modify this as needed to show desired text
+                        links.append(img_name)
+                if not ims == []:
+                    webpage.add_images(ims, txts, links, epoch)
+                # img = vutils.make_grid(tensor_to_plot)
+                # vutils.save_image(tensor_to_plot, basename + "_construct.png")
+                '''
+                We don't need generate_img currently.
+                self.set_input(torch.randn(1, self.embedding_num).repeat(batch[0].shape[0], 1), batch[2], batch[1])
+                self.forward()
+                tensor_to_plot = torch.cat([self.fake_B, self.real_A], 3)
+                vutils.save_image(tensor_to_plot, basename + "_generate.png")
+                '''
         else:
-            basename = saving_dir
-        chk_mkdir(basename)
-        cnt = 0 # count the number of images
-        with torch.no_grad():
-            self.set_input(batch[0], batch[2], batch[1])
-            self.forward()
-            tensor_to_plot = torch.cat([self.fake_B, self.real_B, self.real_A], 3)
-            for label, image_tensor in zip(batch[0], tensor_to_plot):
-                label_dir = os.path.join(basename, str(label.item()))
-                chk_mkdir(label_dir)
-                vutils.save_image(image_tensor, os.path.join(label_dir, str(cnt) + '.png'))
-                cnt += 1
-            webpage = HTML(label_dir, "Dataset = %d, Step = %d" % (mode, step))
-            webpage.add_header('step [%d]' % step)
-            ims, txts, links, labels = [], [], [], []
-            cnt = 0
-            for label, image_tensor in zip(batch[0], tensor_to_plot):
-                img_path = os.path.join(str(label.item()), str(cnt) + '.png')
-                ims.append(img_path)
-                txts.append(label)
-                links.append(img_path)
-                labels.append(str(label.item()))
-                cnt += 1
-            webpage.add_images(ims, txts, links, labels)
-            webpage.save()
-            # img = vutils.make_grid(tensor_to_plot)
-            # vutils.save_image(tensor_to_plot, basename + "_construct.png")
-            '''
-            We don't need generate_img currently.
-            self.set_input(torch.randn(1, self.embedding_num).repeat(batch[0].shape[0], 1), batch[2], batch[1])
-            self.forward()
-            tensor_to_plot = torch.cat([self.fake_B, self.real_A], 3)
-            vutils.save_image(tensor_to_plot, basename + "_generate.png")
-            '''
+            pass
+
+    def infer(self, batch, saving_dir, step, webpage):
+        if not self.sample_saved:
+            img_dir = os.path.join(saving_dir, 'images')
+            chk_mkdir(img_dir)
+            with torch.no_grad():
+                self.set_input(batch[0], batch[2], batch[1])
+                self.forward()
+                tensor_to_plot = torch.cat([self.fake_B, self.real_B, self.real_A], 3)
+                webpage.add_header('step_%d' % step)
+
+                ims, txts, links = [], [], []
+                  # To track which labels have been added to the webpage
+
+                for label, image_tensor in zip(batch[0], tensor_to_plot):
+                    label_item = label.item()
+                    step_dir = os.path.join(img_dir, 'step_%d' % step)
+                    chk_mkdir(step_dir)
+                    if label_item not in self.sample_labels:
+                        # Add image of each label to the webpage
+                        self.sample_labels.add(label_item)
+
+                        # Save all images
+                        image_path = os.path.join(step_dir, 'label_%d' % label + '.png')
+                        vutils.save_image(image_tensor, image_path)
+
+                        img_name = 'label_%d' % label + '.png'
+
+                        # Add image details for HTML
+                        ims.append(img_name)
+                        txts.append(str(label_item))  # Modify this as needed to show desired text
+                        links.append(img_name)
+                if not ims == []:
+                    webpage.add_images(ims, txts, links, 'step_%d' % step)
+                # img = vutils.make_grid(tensor_to_plot)
+                # vutils.save_image(tensor_to_plot, basename + "_construct.png")
+                '''
+                We don't need generate_img currently.
+                self.set_input(torch.randn(1, self.embedding_num).repeat(batch[0].shape[0], 1), batch[2], batch[1])
+                self.forward()
+                tensor_to_plot = torch.cat([self.fake_B, self.real_A], 3)
+                vutils.save_image(tensor_to_plot, basename + "_generate.png")
+                '''
+        else:
+            pass
 
 
 def chk_mkdir(path):

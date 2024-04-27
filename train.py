@@ -1,6 +1,7 @@
 from data import DatasetFromObj
 from torch.utils.data import DataLoader
 from model import Zi2ZiModel
+from utils.html import HTML
 import os
 import sys
 import argparse
@@ -46,8 +47,8 @@ parser.add_argument('--input_nc', type=int, default=3,
                     help='number of input images channels')
 
 def chkormakedir(path):
-    if not os.path.isdir(path):
-        os.mkdir(path)
+    if not os.path.isdir(path) and not os.path.exists(path):
+        os.makedirs(path)
 
 def main():
     args = parser.parse_args()
@@ -58,9 +59,7 @@ def main():
     checkpoint_dir = os.path.join(args.experiment_dir, "checkpoint")
     chkormakedir(checkpoint_dir)
     train_sample_dir = os.path.join(args.experiment_dir, "sample", "train")
-    chkormakedir(train_sample_dir)
     val_sample_dir = os.path.join(args.experiment_dir, "sample", "val")
-    chkormakedir(val_sample_dir)
 
     start_time = time.time()
 
@@ -85,9 +84,13 @@ def main():
 
     # val dataset load only once, no shuffle
     val_dataset = DatasetFromObj(os.path.join(data_dir, 'val.obj'), input_nc=args.input_nc)
-    val_dataloader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False)
+    val_dataloader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=True)
 
     global_steps = 0
+    train_webpage = HTML(train_sample_dir, 'Training results')
+    val_webpage = HTML(val_sample_dir, 'Validation results')
+
+
 
     for epoch in range(args.epoch):
         # generate train dataset every epoch so that different styles of saved char imgs can be trained.
@@ -101,6 +104,7 @@ def main():
         )
         total_batches = math.ceil(len(train_dataset) / args.batch_size)
         dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
+        model.sample_reset()
         for bid, batch in enumerate(dataloader):
             model.set_input(batch[0], batch[2], batch[1])
             const_loss, l1_loss, category_loss, cheat_loss = model.optimize_parameters()
@@ -115,18 +119,22 @@ def main():
                 print("Checkpoint: save checkpoint step %d" % global_steps)
             if global_steps % args.sample_steps == 0:
                 # save training results of the current batch and validation results
-                model.sample(batch, train_sample_dir, str(global_steps))
-                for vbid, val_batch in enumerate(val_dataloader):
-                    model.sample(val_batch, val_sample_dir, str(global_steps))
+                model.sample(batch, train_sample_dir, epoch, train_webpage)
+                model.sample_reset()
+                for val_batch in val_dataloader:
+                    model.sample(val_batch, val_sample_dir, epoch, val_webpage)
+                model.sample_done()
                 print("Sample: sample step %d" % global_steps)
             global_steps += 1
         if (epoch + 1) % args.schedule == 0:
             model.update_lr()
-    # save latest training results and validation results
-    model.sample(batch, train_sample_dir, str(global_steps))
-    for vbid, val_batch in enumerate(val_dataloader):
-        model.sample(val_batch, val_sample_dir, str(global_steps))
+    # save latest validation results
+    model.sample_reset()
+    for val_batch in val_dataloader:
+        model.sample(val_batch, val_sample_dir, 'latest', val_webpage)
         print("Checkpoint: save checkpoint step %d" % global_steps)
+    train_webpage.save()
+    val_webpage.save()
     model.save_networks(global_steps)
 
 
