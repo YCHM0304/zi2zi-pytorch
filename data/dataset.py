@@ -15,6 +15,8 @@ from utils.bytesIO import PickledImageProvider, bytes_to_file
 
 class DatasetFromObj(data.Dataset):
     def __init__(self, obj_path, input_nc=3, augment=False, bold=False, rotate=False, blur=False, start_from=0):
+        if augment:
+            print('Using data augmentation: bold: {}, rotate: {}, blur: {}'.format(bold, rotate, blur))
         super(DatasetFromObj, self).__init__()
         self.image_provider = PickledImageProvider(obj_path)
         self.input_nc = input_nc
