@@ -96,28 +96,28 @@ python font2img.py --src_font=src.ttf
 
 ```sh
 experiment
-└─sample
-    ├─train
-    │  ├─images
-    │  │   ├─epoch_0
-    │  │   │  ├─label_0.png
-    │  │   │  └─label_?.png
-    │  │   └─epoch_?
-    │  │      ├─label_0.png
-    │  │      └─label_?.png
-    │  └─index.html
-    └─val
-       ├─images
-       │   ├─epoch_0
-       │   │  ├─label_0.png
-       │   │  └─label_?.png
-       │   ├─epoch_?
-       │   │  ├─label_0.png
-       │   │  └─label_?.png
-       │   └─latest
-       │      ├─label_0.png
-       │      └─label_?.png
-       └─index.html
+    └─sample
+        ├─train
+        │  ├─images
+        │  │   ├─epoch_0
+        │  │   │  ├─label_0.png
+        │  │   │  └─label_?.png
+        │  │   └─epoch_?
+        │  │      ├─label_0.png
+        │  │      └─label_?.png
+        │  └─index.html
+        └─val
+        ├─images
+        │   ├─epoch_0
+        │   │  ├─label_0.png
+        │   │  └─label_?.png
+        │   ├─epoch_?
+        │   │  ├─label_0.png
+        │   │  └─label_?.png
+        │   └─latest
+        │      ├─label_0.png
+        │      └─label_?.png
+        └─index.html
 ```
 
 Four default charsets are offered: CN, CN_T(traditional), JP, KR. You can also point it to a one line file, it will generate the images of the characters in it. Note, **filter** option is highly recommended, it will pre sample some characters and filter all the images that have the same hash, usually indicating that character is missing. **label** indicating index in the category embeddings that this font associated with, default to 0.

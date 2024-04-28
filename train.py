@@ -14,6 +14,9 @@ parser = argparse.ArgumentParser(description='Train')
 parser.add_argument('--experiment_dir', required=True,
                     help='experiment directory, data, samples,checkpoints,etc')
 parser.add_argument('--gpu_ids', default=[], nargs='+', help="GPUs")
+parser.add_argument('--augment', default=[], nargs='+',
+                    help="Data augmentaiton options: bold, rotate, blur, use multiple options \
+                    by separating them with space")
 parser.add_argument('--image_size', type=int, default=256,
                     help="size of your input and output image")
 parser.add_argument('--L1_penalty', type=int, default=100, help='weight for L1 loss')
@@ -96,11 +99,11 @@ def main():
         # generate train dataset every epoch so that different styles of saved char imgs can be trained.
         train_dataset = DatasetFromObj(
             os.path.join(data_dir, 'train.obj'),
-            input_nc=args.input_nc,
-            augment=True,
-            bold=False,
-            rotate=False,
-            blur=True,
+            input_nc = args.input_nc,
+            augment = not args.augment == [],
+            bold = 'bold' in args.augment,
+            rotate = 'rotate' in args.augment,
+            blur = 'blur' in args.augment,
         )
         total_batches = math.ceil(len(train_dataset) / args.batch_size)
         dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
